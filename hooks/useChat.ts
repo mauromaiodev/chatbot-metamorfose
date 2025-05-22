@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-type ChatStage = 
-  | 'initial' 
-  | 'service_selection' 
-  | 'sub_service_selection' 
-  | 'user_details' 
-  | 'generate_link';
+type ChatStage =
+  | "initial"
+  | "service_selection"
+  | "sub_service_selection"
+  | "user_details"
+  | "generate_link";
 
 interface ChatMessage {
   text: string;
@@ -16,134 +16,155 @@ interface ChatMessage {
 
 export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [currentStage, setCurrentStage] = useState<ChatStage>('initial');
+  const [currentStage, setCurrentStage] = useState<ChatStage>("initial");
   const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [selectedSubService, setSelectedSubService] = useState<string | null>(null);
+  const [selectedSubService, setSelectedSubService] = useState<string | null>(
+    null
+  );
   const [userDetails, setUserDetails] = useState<string | null>(null);
-  const [history, setHistory] = useState<ChatStage[]>(['initial']);
+  const [history, setHistory] = useState<ChatStage[]>(["initial"]);
 
-  // Initialize chat
-  useEffect(() => {
-    const initialMessage: ChatMessage = {
+  const initialMessage = useMemo<ChatMessage>(
+    () => ({
       text: "Olá! Bem-vindo à Metamorfose. Como posso ajudar você hoje? Por favor, selecione um de nossos serviços para começar.",
-      isUser: false
-    };
-    
-    setMessages([initialMessage]);
-    setTimeout(() => {
-      setCurrentStage('service_selection');
-      setHistory(['initial', 'service_selection']);
-    }, 1000);
-  }, []);
+      isUser: false,
+    }),
+    []
+  );
 
-  // Handle service selection
-  const handleServiceSelect = (service: string) => {
+  useEffect(() => {
+    setMessages([initialMessage]);
+    const timer = setTimeout(() => {
+      setCurrentStage("service_selection");
+      setHistory(["initial", "service_selection"]);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [initialMessage]);
+
+  const handleServiceSelect = useCallback((service: string) => {
     const userMessage: ChatMessage = {
       text: service,
-      isUser: true
+      isUser: true,
     };
-    
+
     const botResponse: ChatMessage = {
       text: `Ótima escolha! Agora, por favor selecione o tipo específico de ${service.toLowerCase()} que você está procurando:`,
-      isUser: false
+      isUser: false,
     };
-    
-    setMessages(prev => [...prev, userMessage, botResponse]);
-    setSelectedService(service);
-    setCurrentStage('sub_service_selection');
-    setHistory(prev => [...prev, 'sub_service_selection']);
-  };
 
-  // Handle sub-service selection
-  const handleSubServiceSelect = (subService: string) => {
+    setMessages((prev) => [...prev, userMessage, botResponse]);
+    setSelectedService(service);
+    setCurrentStage("sub_service_selection");
+    setHistory((prev) => [...prev, "sub_service_selection"]);
+  }, []);
+
+  const handleSubServiceSelect = useCallback((subService: string) => {
     const userMessage: ChatMessage = {
       text: subService,
-      isUser: true
+      isUser: true,
     };
-    
+
     const botResponse: ChatMessage = {
       text: "Perfeito! Agora, por favor descreva brevemente o que você precisa, incluindo qualquer detalhe específico que queira compartilhar:",
-      isUser: false
+      isUser: false,
     };
-    
-    setMessages(prev => [...prev, userMessage, botResponse]);
-    setSelectedSubService(subService);
-    setCurrentStage('user_details');
-    setHistory(prev => [...prev, 'user_details']);
-  };
 
-  // Handle user input (details)
-  const handleUserInput = (input: string) => {
+    setMessages((prev) => [...prev, userMessage, botResponse]);
+    setSelectedSubService(subService);
+    setCurrentStage("user_details");
+    setHistory((prev) => [...prev, "user_details"]);
+  }, []);
+
+  const handleUserInput = useCallback((input: string) => {
     const userMessage: ChatMessage = {
       text: input,
-      isUser: true
+      isUser: true,
     };
-    
+
     const botResponse: ChatMessage = {
       text: "Obrigado por compartilhar seus detalhes. Preparei um link para o WhatsApp onde podemos continuar nossa conversa e fornecer as informações que você precisa.",
-      isUser: false
+      isUser: false,
     };
-    
-    setMessages(prev => [...prev, userMessage, botResponse]);
+
+    setMessages((prev) => [...prev, userMessage, botResponse]);
     setUserDetails(input);
-    setCurrentStage('generate_link');
-    setHistory(prev => [...prev, 'generate_link']);
-  };
+    setCurrentStage("generate_link");
+    setHistory((prev) => [...prev, "generate_link"]);
+  }, []);
 
-  // Handle back button
-  const handleBack = () => {
-    if (history.length > 1) {
-      const newHistory = [...history];
-      newHistory.pop(); // Remove current stage
-      const previousStage = newHistory[newHistory.length - 1];
-      
-      setCurrentStage(previousStage);
-      setHistory(newHistory);
-      
-      // Reset relevant state based on where we're going back to
-      if (previousStage === 'initial') {
-        setSelectedService(null);
-        setSelectedSubService(null);
-        setUserDetails(null);
-      } else if (previousStage === 'service_selection') {
-        setSelectedService(null);
-        setSelectedSubService(null);
-        setUserDetails(null);
-      } else if (previousStage === 'sub_service_selection') {
-        setSelectedSubService(null);
-        setUserDetails(null);
+  const handleBack = useCallback(() => {
+    setHistory((prevHistory) => {
+      if (prevHistory.length > 1) {
+        const newHistory = [...prevHistory];
+        newHistory.pop();
+        const previousStage = newHistory[newHistory.length - 1];
+
+        setCurrentStage(previousStage);
+
+        if (previousStage === "initial") {
+          setSelectedService(null);
+          setSelectedSubService(null);
+          setUserDetails(null);
+        } else if (previousStage === "service_selection") {
+          setSelectedService(null);
+          setSelectedSubService(null);
+          setUserDetails(null);
+        } else if (previousStage === "sub_service_selection") {
+          setSelectedSubService(null);
+          setUserDetails(null);
+        }
+
+        setMessages((prev) => prev.slice(0, prev.length - 2));
+
+        return newHistory;
       }
-      
-      // Remove last two messages (user selection and bot response)
-      setMessages(prev => prev.slice(0, prev.length - 2));
-    }
-  };
+      return prevHistory;
+    });
+  }, []);
 
-  // Reset chat
-  const resetChat = () => {
-    const initialMessage: ChatMessage = {
+  const resetChat = useCallback(() => {
+    const resetMessage: ChatMessage = {
       text: "Vamos começar novamente. Por favor, selecione um de nossos serviços:",
-      isUser: false
+      isUser: false,
     };
-    
-    setMessages([initialMessage]);
-    setCurrentStage('service_selection');
+
+    setMessages([resetMessage]);
+    setCurrentStage("service_selection");
     setSelectedService(null);
     setSelectedSubService(null);
     setUserDetails(null);
-    setHistory(['initial', 'service_selection']);
-  };
+    setHistory(["initial", "service_selection"]);
+  }, []);
 
-  return {
-    messages,
-    currentStage,
-    selectedService,
-    selectedSubService,
-    userDetails,
-    handleServiceSelect,
-    handleSubServiceSelect,
-    handleUserInput,
-    handleBack,
-    resetChat
-  };
+  const chatState = useMemo(
+    () => ({
+      messages,
+      currentStage,
+      selectedService,
+      selectedSubService,
+      userDetails,
+      history,
+      handleServiceSelect,
+      handleSubServiceSelect,
+      handleUserInput,
+      handleBack,
+      resetChat,
+    }),
+    [
+      messages,
+      currentStage,
+      selectedService,
+      selectedSubService,
+      userDetails,
+      history,
+      handleServiceSelect,
+      handleSubServiceSelect,
+      handleUserInput,
+      handleBack,
+      resetChat,
+    ]
+  );
+
+  return chatState;
 }

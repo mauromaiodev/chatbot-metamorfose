@@ -55,19 +55,19 @@ export function ChatInterface() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-3xl h-[600px] bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl flex flex-col overflow-hidden"
     >
-      {/* Chat Header */}
       <div className="bg-gradient-to-r from-[#ff5757] to-[#8c52ff] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {currentStage !== "initial" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleBack}
-              className="text-white hover:bg-white/20"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          )}
+          {currentStage !== "initial" &&
+            currentStage !== "service_selection" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBack}
+                className="text-white hover:bg-white/20"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
           <h2 className="font-bold text-white text-lg">
             Assistente Metamorfose
           </h2>
@@ -82,7 +82,6 @@ export function ChatInterface() {
         </Button>
       </div>
 
-      {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         <AnimatePresence>
           {messages.map((message, index) => (
@@ -95,7 +94,6 @@ export function ChatInterface() {
           ))}
         </AnimatePresence>
 
-        {/* Service Selection */}
         {currentStage === "service_selection" && (
           <ServiceSelection
             services={servicesData.map((s) => s.name)}
@@ -103,7 +101,6 @@ export function ChatInterface() {
           />
         )}
 
-        {/* Sub-Service Selection */}
         {currentStage === "sub_service_selection" && selectedService && (
           <ServiceSelection
             services={
@@ -113,7 +110,6 @@ export function ChatInterface() {
           />
         )}
 
-        {/* WhatsApp Link (final stage) */}
         {currentStage === "generate_link" &&
           selectedService &&
           selectedSubService &&
@@ -128,7 +124,6 @@ export function ChatInterface() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area - Only show in user_details stage */}
       {currentStage === "user_details" && (
         <div className="border-t border-gray-200 p-4 bg-gray-50">
           <div className="flex items-center gap-2">

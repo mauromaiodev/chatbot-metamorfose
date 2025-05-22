@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from 'framer-motion';
-import { MessageSquareText, Sparkles, BookOpen, Lightbulb } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { BookOpen, Lightbulb, MessageSquareText, Sparkles } from "lucide-react";
 
 interface HomeScreenProps {
   onStart: () => void;
@@ -10,14 +10,14 @@ interface HomeScreenProps {
 
 export function HomeScreen({ onStart }: HomeScreenProps) {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="w-full max-w-3xl bg-white/95 backdrop-blur-sm rounded-3xl p-6 md:p-10 shadow-2xl"
     >
       <div className="text-center mb-8">
-        <motion.h1 
+        <motion.h1
           className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#ff5757] to-[#8c52ff] text-transparent bg-clip-text"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -25,7 +25,7 @@ export function HomeScreen({ onStart }: HomeScreenProps) {
         >
           Metamorfose
         </motion.h1>
-        <motion.p 
+        <motion.p
           className="mt-3 text-gray-600 text-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -35,58 +35,61 @@ export function HomeScreen({ onStart }: HomeScreenProps) {
         </motion.p>
       </div>
 
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.7 }}
       >
-        <ServiceCard 
+        <ServiceCard
           icon={<Sparkles className="h-8 w-8 text-[#ff5757]" />}
           title="Consultoria Estratégica"
           items={[
             "Planejamento e desenvolvimento profissional",
             "Treinamento neurocomportamental",
-            "Aprimoramento de oratória"
+            "Aprimoramento de oratória",
           ]}
         />
-        
-        <ServiceCard 
+
+        <ServiceCard
           icon={<BookOpen className="h-8 w-8 text-[#a94dff]" />}
           title="Mentoria e Suporte"
           items={[
             "Projetos científicos e escrita técnica",
             "Relatórios e documentos técnicos",
-            "Aulas personalizadas"
+            "Aulas personalizadas",
           ]}
         />
-        
-        <ServiceCard 
+
+        <ServiceCard
           icon={<Lightbulb className="h-8 w-8 text-[#8c52ff]" />}
           title="Serviços em Geral"
           items={[
             "Simplificação de conceitos científicos",
             "Mentorias individuais e para equipes",
             "Transição acadêmica para o mercado",
-            "Workshops e palestras"
+            "Workshops e palestras",
           ]}
         />
       </motion.div>
 
-      <motion.div 
-        className="text-center"
+      <motion.div
+        className="text-center flex flex-col items-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.5 }}
       >
-        <Button 
+        <Button
           onClick={onStart}
-          className="bg-gradient-to-r from-[#ff5757] to-[#8c52ff] hover:opacity-90 text-white font-medium py-6 px-8 rounded-full text-lg shadow-lg flex items-center gap-2 transition-all duration-300"
+          className="bg-gradient-to-r from-[#ff5757] to-[#8c52ff] hover:opacity-90 text-white font-medium py-6 px-8 rounded-full text-lg shadow-lg inline-flex items-center gap-2 transition-all duration-300"
         >
           <MessageSquareText className="h-5 w-5" />
           Iniciar Conversa
         </Button>
-        <p className="mt-4 text-sm text-gray-500">Converse com nosso assistente virtual e receba informações diretamente no WhatsApp</p>
+        <p className="mt-4 text-sm text-gray-500">
+          Converse com nosso assistente virtual e receba informações diretamente
+          no WhatsApp
+        </p>
       </motion.div>
     </motion.div>
   );

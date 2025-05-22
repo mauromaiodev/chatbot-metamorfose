@@ -15,7 +15,7 @@ export function WhatsAppLink({
   subService,
   userDetails,
 }: WhatsAppLinkProps) {
-  const phoneNumber = "5571987298417"; // Replace with your actual WhatsApp number
+  const phoneNumber = "5571987298417";
 
   const message = encodeURIComponent(
     `Olá, gostaria de saber mais sobre os serviços da Metamorfose.\n\n` +

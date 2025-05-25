@@ -1,27 +1,48 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { UserDetails } from "@/hooks/useChat";
+import { ServiceItem } from "@/lib/services";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 
 interface WhatsAppLinkProps {
+  category: string;
   service: string;
-  subService: string;
-  userDetails: string;
+  serviceItem: ServiceItem;
+  userDetails: UserDetails;
 }
 
 export function WhatsAppLink({
+  category,
   service,
-  subService,
+  serviceItem,
   userDetails,
 }: WhatsAppLinkProps) {
   const phoneNumber = "5571987298417";
 
+  const formatPrice = (price: number) => {
+    return price.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  };
+
   const message = encodeURIComponent(
     `Olá, gostaria de saber mais sobre os serviços da Metamorfose.\n\n` +
+      `Categoria: ${category}\n` +
       `Serviço: ${service}\n` +
-      `Tipo: ${subService}\n` +
-      `Detalhes: ${userDetails}`
+      (serviceItem.price ? `Valor: ${formatPrice(serviceItem.price)}\n` : "") +
+      (serviceItem.duration ? `Duração: ${serviceItem.duration}\n` : "") +
+      (userDetails.area ? `Área: ${userDetails.area}\n` : "") +
+      (userDetails.hasDocument !== undefined
+        ? `Documento: ${
+            userDetails.hasDocument ? "Tenho um documento" : "Começar do zero"
+          }\n`
+        : "") +
+      (userDetails.additionalInfo
+        ? `\nDetalhes adicionais: ${userDetails.additionalInfo}`
+        : "")
   );
 
   const whatsappLink = `https://wa.me/${phoneNumber}?text=${message}`;
@@ -38,14 +59,35 @@ export function WhatsAppLink({
 
       <div className="text-left mb-6 space-y-2">
         <p>
+          <span className="font-medium">Categoria:</span> {category}
+        </p>
+        <p>
           <span className="font-medium">Serviço:</span> {service}
         </p>
-        <p>
-          <span className="font-medium">Tipo:</span> {subService}
-        </p>
-        <p>
-          <span className="font-medium">Detalhes:</span> {userDetails}
-        </p>
+        {serviceItem.price && (
+          <p>
+            <span className="font-medium">Valor:</span>{" "}
+            {formatPrice(serviceItem.price)}
+            {serviceItem.duration && ` (${serviceItem.duration})`}
+          </p>
+        )}
+        {userDetails.area && (
+          <p>
+            <span className="font-medium">Área:</span> {userDetails.area}
+          </p>
+        )}
+        {userDetails.hasDocument !== undefined && (
+          <p>
+            <span className="font-medium">Documento:</span>{" "}
+            {userDetails.hasDocument ? "Tenho um documento" : "Começar do zero"}
+          </p>
+        )}
+        {userDetails.additionalInfo && (
+          <p>
+            <span className="font-medium">Detalhes adicionais:</span>{" "}
+            {userDetails.additionalInfo}
+          </p>
+        )}
       </div>
 
       <p className="text-sm text-gray-500 mb-4">

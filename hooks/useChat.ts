@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Service, ServiceItem, servicesData } from "@/lib/services";
+import { useEffect, useState } from "react";
 
-type ChatStage =
+export type ChatStage =
   | "initial"
+  | "category_selection"
   | "service_selection"
-  | "sub_service_selection"
-  | "user_details"
+  | "conditional_details"
+  | "additional_info"
   | "generate_link";
 
 interface ChatMessage {
@@ -14,157 +16,184 @@ interface ChatMessage {
   isUser: boolean;
 }
 
+export interface UserDetails {
+  area?: string;
+  hasDocument?: boolean;
+  additionalInfo?: string;
+}
+
 export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStage, setCurrentStage] = useState<ChatStage>("initial");
-  const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [selectedSubService, setSelectedSubService] = useState<string | null>(
+  const [selectedCategory, setSelectedCategory] = useState<Service | null>(
     null
   );
-  const [userDetails, setUserDetails] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceItem | null>(
+    null
+  );
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [history, setHistory] = useState<ChatStage[]>(["initial"]);
 
-  const initialMessage = useMemo<ChatMessage>(
-    () => ({
-      text: "Olá! Bem-vindo à Metamorfose. Como posso ajudar você hoje? Por favor, selecione um de nossos serviços para começar.",
-      isUser: false,
-    }),
-    []
-  );
-
   useEffect(() => {
+    const initialMessage: ChatMessage = {
+      text: "Olá! Bem-vindo à Metamorfose. Como posso ajudar você hoje?\n\nPor favor, selecione uma de nossas categorias de serviços para começar.",
+      isUser: false,
+    };
+
     setMessages([initialMessage]);
-    const timer = setTimeout(() => {
-      setCurrentStage("service_selection");
-      setHistory(["initial", "service_selection"]);
+    setTimeout(() => {
+      setCurrentStage("category_selection");
+      setHistory(["initial", "category_selection"]);
     }, 1000);
+  }, []);
 
-    return () => clearTimeout(timer);
-  }, [initialMessage]);
-
-  const handleServiceSelect = useCallback((service: string) => {
+  const handleCategorySelect = (category: Service) => {
     const userMessage: ChatMessage = {
-      text: service,
+      text: `${category.emoji} ${category.name}`,
       isUser: true,
     };
 
     const botResponse: ChatMessage = {
-      text: `Ótima escolha! Agora, por favor selecione o tipo específico de ${service.toLowerCase()} que você está procurando:`,
+      text: `Ótimo! Qual desses serviços você busca?`,
       isUser: false,
     };
+
+    setMessages((prev) => [...prev, userMessage, botResponse]);
+    setSelectedCategory(category);
+    setCurrentStage("service_selection");
+    setHistory((prev) => [...prev, "service_selection"]);
+  };
+
+  const handleServiceSelect = (service: ServiceItem) => {
+    const userMessage: ChatMessage = {
+      text: service.name,
+      isUser: true,
+    };
+
+    let botResponse: ChatMessage;
+
+    if (service.conditional) {
+      botResponse = {
+        text: "Estamos quase lá! Preciso das últimas informações para te enviar um orçamento inicial.",
+        isUser: false,
+      };
+      setCurrentStage("conditional_details");
+      setHistory((prev) => [...prev, "conditional_details"]);
+    } else {
+      const price = service.price?.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+      const duration = service.duration ? ` (${service.duration})` : "";
+      botResponse = {
+        text: `Este serviço tem um investimento fixo de ${price}${duration}!\n\nSe quiser compartilhar mais detalhes antes de prosseguir, aproveite o momento!\n\nMe conte o que julgar relevante, como prazos, formato desejado ou preferências específicas para que sua solicitação seja ainda mais personalizada. (Limite de 300 caracteres).`,
+        isUser: false,
+      };
+      setCurrentStage("additional_info");
+      setUserDetails({});
+      setHistory((prev) => [...prev, "additional_info"]);
+    }
 
     setMessages((prev) => [...prev, userMessage, botResponse]);
     setSelectedService(service);
-    setCurrentStage("sub_service_selection");
-    setHistory((prev) => [...prev, "sub_service_selection"]);
-  }, []);
+  };
 
-  const handleSubServiceSelect = useCallback((subService: string) => {
+  const handleUserInput = (input: string) => {
     const userMessage: ChatMessage = {
-      text: subService,
+      text: input || "Prosseguir sem informações adicionais",
       isUser: true,
     };
 
     const botResponse: ChatMessage = {
-      text: "Perfeito! Agora, por favor descreva brevemente o que você precisa, incluindo qualquer detalhe específico que queira compartilhar:",
+      text: "Tudo certo! Com essas informações, podemos preparar um atendimento mais preciso para você. Agora, basta enviar sua solicitação clicando no botão abaixo!",
       isUser: false,
     };
 
     setMessages((prev) => [...prev, userMessage, botResponse]);
-    setSelectedSubService(subService);
-    setCurrentStage("user_details");
-    setHistory((prev) => [...prev, "user_details"]);
-  }, []);
-
-  const handleUserInput = useCallback((input: string) => {
-    const userMessage: ChatMessage = {
-      text: input,
-      isUser: true,
-    };
-
-    const botResponse: ChatMessage = {
-      text: "Obrigado por compartilhar seus detalhes. Preparei um link para o WhatsApp onde podemos continuar nossa conversa e fornecer as informações que você precisa.",
-      isUser: false,
-    };
-
-    setMessages((prev) => [...prev, userMessage, botResponse]);
-    setUserDetails(input);
+    setUserDetails((prev) => ({
+      ...prev,
+      additionalInfo: input.trim() || undefined,
+    }));
     setCurrentStage("generate_link");
     setHistory((prev) => [...prev, "generate_link"]);
-  }, []);
+  };
 
-  const handleBack = useCallback(() => {
-    setHistory((prevHistory) => {
-      if (prevHistory.length > 1) {
-        const newHistory = [...prevHistory];
-        newHistory.pop();
-        const previousStage = newHistory[newHistory.length - 1];
+  const handleConditionalDetails = (
+    area: string,
+    hasDocument: boolean,
+    additionalInfo?: string
+  ) => {
+    setUserDetails({ area, hasDocument, additionalInfo });
 
-        setCurrentStage(previousStage);
+    const userMessage: ChatMessage = {
+      text: `Área: ${area}\n${
+        hasDocument ? "Tenho um documento" : "Vou começar do zero"
+      }${additionalInfo ? `\nDetalhes: ${additionalInfo}` : ""}`,
+      isUser: true,
+    };
 
-        if (previousStage === "initial") {
-          setSelectedService(null);
-          setSelectedSubService(null);
-          setUserDetails(null);
-        } else if (previousStage === "service_selection") {
-          setSelectedService(null);
-          setSelectedSubService(null);
-          setUserDetails(null);
-        } else if (previousStage === "sub_service_selection") {
-          setSelectedSubService(null);
-          setUserDetails(null);
-        }
-
-        setMessages((prev) => prev.slice(0, prev.length - 2));
-
-        return newHistory;
-      }
-      return prevHistory;
-    });
-  }, []);
-
-  const resetChat = useCallback(() => {
-    const resetMessage: ChatMessage = {
-      text: "Vamos começar novamente. Por favor, selecione um de nossos serviços:",
+    const botResponse: ChatMessage = {
+      text: "Tudo certo! Com essas informações, podemos preparar um atendimento mais preciso para você. Agora, basta enviar sua solicitação clicando no botão abaixo!",
       isUser: false,
     };
 
-    setMessages([resetMessage]);
-    setCurrentStage("service_selection");
+    setMessages((prev) => [...prev, userMessage, botResponse]);
+    setCurrentStage("generate_link");
+    setHistory((prev) => [...prev, "generate_link"]);
+  };
+
+  const handleBack = () => {
+    if (history.length > 1) {
+      const newHistory = [...history];
+      newHistory.pop();
+      const previousStage = newHistory[newHistory.length - 1] as ChatStage;
+
+      setCurrentStage(previousStage);
+      setHistory(newHistory);
+
+      if (previousStage === "initial") {
+        setSelectedCategory(null);
+        setSelectedService(null);
+        setUserDetails(null);
+      } else if (previousStage === "category_selection") {
+        setSelectedCategory(null);
+        setSelectedService(null);
+        setUserDetails(null);
+      } else if (previousStage === "service_selection") {
+        setSelectedService(null);
+        setUserDetails(null);
+      }
+
+      setMessages((prev) => prev.slice(0, prev.length - 2));
+    }
+  };
+
+  const resetChat = () => {
+    const initialMessage: ChatMessage = {
+      text: "Vamos começar novamente. Por favor, selecione uma de nossas categorias de serviços:",
+      isUser: false,
+    };
+
+    setMessages([initialMessage]);
+    setCurrentStage("category_selection");
+    setSelectedCategory(null);
     setSelectedService(null);
-    setSelectedSubService(null);
     setUserDetails(null);
-    setHistory(["initial", "service_selection"]);
-  }, []);
+    setHistory(["initial", "category_selection"]);
+  };
 
-  const chatState = useMemo(
-    () => ({
-      messages,
-      currentStage,
-      selectedService,
-      selectedSubService,
-      userDetails,
-      history,
-      handleServiceSelect,
-      handleSubServiceSelect,
-      handleUserInput,
-      handleBack,
-      resetChat,
-    }),
-    [
-      messages,
-      currentStage,
-      selectedService,
-      selectedSubService,
-      userDetails,
-      history,
-      handleServiceSelect,
-      handleSubServiceSelect,
-      handleUserInput,
-      handleBack,
-      resetChat,
-    ]
-  );
-
-  return chatState;
+  return {
+    messages,
+    currentStage,
+    selectedCategory,
+    selectedService,
+    userDetails,
+    servicesData,
+    handleCategorySelect,
+    handleServiceSelect,
+    handleUserInput,
+    handleConditionalDetails,
+    handleBack,
+    resetChat,
+  };
 }

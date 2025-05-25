@@ -14,16 +14,16 @@ export function HomeScreen({ onStart }: HomeScreenProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-3xl bg-white/95 backdrop-blur-sm rounded-3xl p-6 md:p-10 shadow-2xl"
+      className="w-full max-w-6xl bg-white/95 backdrop-blur-sm rounded-3xl p-6 md:p-10 shadow-2xl"
     >
       <div className="text-center mb-8">
         <motion.h1
-          className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#ff5757] to-[#8c52ff] text-transparent bg-clip-text"
+          className="text-3xl md:text-3xl font-bold bg-gradient-to-r from-[#ff5757] to-[#8c52ff] text-transparent bg-clip-text"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.7 }}
         >
-          Metamorfose
+          Metamorfose - Assessoria e Consultoria Profissional
         </motion.h1>
         <motion.p
           className="mt-3 text-gray-600 text-lg"
@@ -31,7 +31,7 @@ export function HomeScreen({ onStart }: HomeScreenProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.7 }}
         >
-          Consultoria Estratégica e Mentoria Profissional
+          Ingrid Santana
         </motion.p>
       </div>
 
@@ -43,32 +43,31 @@ export function HomeScreen({ onStart }: HomeScreenProps) {
       >
         <ServiceCard
           icon={<Sparkles className="h-8 w-8 text-[#ff5757]" />}
-          title="Consultoria Estratégica"
+          title="Consultoria e Desenvolvimento Profissional"
           items={[
-            "Planejamento e desenvolvimento profissional",
-            "Treinamento neurocomportamental",
-            "Aprimoramento de oratória",
+            "Consultoria Estratégica & Desenvolvimento Profissional",
+            "Treinamentos Neurocomportamentais & Oratória",
+            "Mentoria e Planejamento de Carreira",
           ]}
         />
 
         <ServiceCard
           icon={<BookOpen className="h-8 w-8 text-[#a94dff]" />}
-          title="Mentoria e Suporte"
+          title="Escrita Técnica & Produção Acadêmica"
           items={[
-            "Projetos científicos e escrita técnica",
-            "Relatórios e documentos técnicos",
-            "Aulas personalizadas",
+            "Projetos Científicos & Escrita Técnica",
+            "Revisão, Relatórios & Documentação Acadêmica",
+            "Mapas Mentais, Resumos & Apresentações",
           ]}
         />
 
         <ServiceCard
           icon={<Lightbulb className="h-8 w-8 text-[#8c52ff]" />}
-          title="Serviços em Geral"
+          title="Ensino, Treinamentos e Transição Profissional"
           items={[
-            "Simplificação de conceitos científicos",
-            "Mentorias individuais e para equipes",
-            "Transição acadêmica para o mercado",
-            "Workshops e palestras",
+            "Metodologias de Ensino & Aulas Personalizadas",
+            "Mentorias Individuais & para Equipes",
+            "Transição Acadêmica para o Mercado & Workshops",
           ]}
         />
       </motion.div>
@@ -103,7 +102,7 @@ interface ServiceCardProps {
 
 function ServiceCard({ icon, title, items }: ServiceCardProps) {
   return (
-    <div className="bg-white/50 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-white/20">
+    <div className="bg-white/50 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-white/20 ">
       <div className="flex items-center gap-3 mb-3">
         {icon}
         <h3 className="font-semibold text-lg">{title}</h3>
